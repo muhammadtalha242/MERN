@@ -1,50 +1,56 @@
-const { uuid } = require('uuidv4');
-const HttpError = require("../models/http-error");
+const { v4  } = require('uuid');
+const { validationResult } = require('express-validator');
 
+const HttpError = require('../models/http-error');
 
-let DUMMY_USER =[
-    {
-        id:"u1",
-        name:"user 1"
+const DUMMY_USERS = [
+  {
+    id: 'u1',
+    name: 'Max Schwarz',
+    email: 'test@test.com',
+    password: 'testers'
+  }
+];
 
-    },
-    {
-        id:"u2",
-        name:"user 2"
+const getUsers = (req, res, next) => {
+  res.json({ users: DUMMY_USERS });
+};
 
-    },
-    {
-        id:"u3",
-        name:"user 3"
+const signup = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    throw new HttpError('Invalid inputs passed, please check your data.', 422);
+  }
+  const { name, email, password } = req.body;
 
-    }
-]
+  const hasUser = DUMMY_USERS.find(u => u.email === email);
+  if (hasUser) {
+    throw new HttpError('Could not create user, email already exists.', 422);
+  }
 
-const getAllUsers=(req, res, next)=>{
-    res.json({users: DUMMY_USER})
-}
+  const createdUser = {
+    id: v4(),
+    name, // name: name
+    email,
+    password
+  };
 
-const addUser=(req, res, next)=>{
-    const user = req.body;
-    user.id = uuid();
-    DUMMY_USER.push(user);
+  DUMMY_USERS.push(createdUser);
 
-    res.status(201).json({message:'users added',users: DUMMY_USER})
+  res.status(201).json({user: createdUser});
+};
 
-}
+const login = (req, res, next) => {
+  const { email, password } = req.body;
 
-const loginUser=(req, res, next)=>{
-    const {username, password}= req.body;
-    console.log(JSON.stringify(req.body));
-    console.log(username, password)
-    const user = DUMMY_USER.find(u => u.name=== username)
+  const identifiedUser = DUMMY_USERS.find(u => u.email === email);
+  if (!identifiedUser || identifiedUser.password !== password) {
+    throw new HttpError('Could not identify user, credentials seem to be wrong.', 401);
+  }
 
-    if(!user)
-    return next(new HttpError('Could not find a place for the provided id.', 404));
+  res.json({message: 'Logged in!'});
+};
 
-    res.json({message:'users logged in', user });
-}
-
-exports.getAllUsers = getAllUsers;
-exports.addUser = addUser;
-exports.loginUser = loginUser;
+exports.getUsers = getUsers;
+exports.signup = signup;
+exports.login = login;
