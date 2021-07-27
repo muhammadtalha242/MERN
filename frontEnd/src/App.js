@@ -6,7 +6,7 @@ import NewPlace from './places/pages/NewPlace'
 import UserPlaces from "./places/pages/UserPlaces"
 import User from "./users/pages/User"
 import UpdatePlace from './places/pages/UpdatePlace'
-
+import Authenticate from "./users/pages/Authenticate";
 
 const App = () => {
   return (
@@ -24,8 +24,10 @@ const App = () => {
             <NewPlace />
           </Route>
           <Route path="/places/:placeId" exact>
-            
             <UpdatePlace />
+          </Route>
+          <Route path="/auth" exact>
+            <Authenticate />
           </Route>
           <Redirect to="/" />
         </Switch>
